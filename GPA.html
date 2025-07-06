@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>GPA Calculator</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: #ffffff;
+      min-height: 100vh;
+      padding: 20px;
+      color: #333333;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    input, select, textarea {
+      font-size: 16px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 8px;
+      padding: 30px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      border: 1px solid #e0e0e0;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    .header h1 {
+      color: #2c3e50;
+      font-size: 2.2rem;
+      font-weight: 700;
+      margin-bottom: 5px;
+    }
+
+    .header h2 {
+      color: #7f8c8d;
+      font-size: 1.1rem;
+      font-weight: 500;
+      margin-bottom: 5px;
+    }
+
+    .header p {
+      color: #95a5a6;
+      font-size: 0.8rem;
+    }
+
+    .cgpa-section {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .cgpa-input {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .cgpa-input label {
+      font-weight: 600;
+      color: #2c3e50;
+    }
+
+    .cgpa-input input {
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      width: 100px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+
+    .stat-card {
+      background: #f8f9fa;
+      border: 1px solid #e0e0e0;
+      padding: 15px;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .stat-card h3 {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #7f8c8d;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+    }
+
+    .stat-card .value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #2c3e50;
+    }
+
+    .controls-section {
+      margin-bottom: 20px;
+    }
+
+    .import-export {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .file-input {
+      display: none;
+    }
+
+    .file-label, .control-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 12px 15px;
+      background: #ecf0f1;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: #2c3e50;
+      min-height: 44px;
+    }
+
+    .file-label.danger {
+      background: #ffecec;
+      border-color: #ffd1d1;
+      color: #e74c3c;
+    }
+
+    .table-container {
+      overflow-x: auto;
+      border-radius: 8px;
+      border: 1px solid #e0e0e0;
+      margin-bottom: 20px;
+      background: white;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th {
+      background: #f8f9fa;
+      color: #2c3e50;
+      padding: 12px;
+      text-align: center;
+      font-weight: 600;
+      font-size: 0.8rem;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    td {
+      padding: 12px;
+      text-align: center;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    input[type="text"], input[type="number"] {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      background: white;
+      color: #333;
+    }
+
+    .points, .total-points {
+      font-weight: 600;
+      color: #3498db;
+      font-size: 0.8rem;
+    }
+
+    .grade-display {
+      display: inline-block;
+      padding: 3px 6px;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      font-weight: 600;
+    }
+
+    .grade-a { background: #e8f5e9; color: #2e7d32; }
+    .grade-b { background: #e3f2fd; color: #1565c0; }
+    .grade-c { background: #fff3e0; color: #e65100; }
+    .grade-d { background: #fff8e1; color: #ff8f00; }
+    .grade-f { background: #ffebee; color: #c62828; }
+
+    .button-container {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    button {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 12px 15px;
+      border: none;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      min-height: 44px;
+    }
+
+    .btn-primary {
+      background: #3498db;
+      color: white;
+    }
+
+    .btn-secondary {
+      background: #9b59b6;
+      color: white;
+    }
+
+    .btn-tertiary {
+      background: #2ecc71;
+      color: white;
+    }
+
+    .delete-btn {
+      background: #e74c3c;
+      color: white;
+      border-radius: 4px;
+      width: 44px;
+      height: 44px;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .result-section {
+      background: #f8f9fa;
+      border: 1px solid #e0e0e0;
+      padding: 20px;
+      border-radius: 8px;
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .result-section h3 {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #2c3e50;
+      margin-bottom: 15px;
+    }
+
+    .gpa-display {
+      font-size: 3rem;
+      font-weight: 700;
+      color: #3498db;
+      margin: 10px 0;
+    }
+
+    .combined-gpa {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #2c3e50;
+      margin: 15px 0;
+    }
+
+    .result-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .result-stat {
+      background: white;
+      border: 1px solid #e0e0e0;
+      padding: 12px;
+      border-radius: 4px;
+    }
+
+    .result-stat-label {
+      font-size: 0.7rem;
+      color: #7f8c8d;
+      margin-bottom: 5px;
+    }
+
+    .result-stat-value {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #2c3e50;
+    }
+
+    .preview-warning {
+      padding: 20px;
+      text-align: center;
+    }
+
+    .preview-warning ol {
+      text-align: left;
+      max-width: 300px;
+      margin: 20px auto;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 20px;
+      }
+      
+      .header h1 {
+        font-size: 1.8rem;
+      }
+      
+      .cgpa-section {
+        flex-direction: column;
+      }
+      
+      .button-container {
+        flex-direction: column;
+      }
+      
+      button {
+        width: 100%;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      #subjectTable td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: #7f8c8d;
+        margin-right: auto;
+        padding-right: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>University of Khartoum</h1>
+      <h2>Faculty of Dentistry - GPA Calculator</h2>
+      <p>Created By Khalid Omer B49</p>
+    </div>
+
+    <div class="cgpa-section">
+      <div class="cgpa-input">
+        <label for="currentCGPA">Current CGPA:</label>
+        <input type="tel" pattern="[0-9]*" inputmode="decimal" id="currentCGPA" min="0" max="4" step="0.01" placeholder="0.00">
+      </div>
+      <div class="cgpa-input">
+        <label for="totalCompletedCredits">Completed Credits:</label>
+        <input type="tel" pattern="[0-9]*" inputmode="decimal" id="totalCompletedCredits" min="0" step="0.5" placeholder="0">
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <h3>Total Subjects</h3>
+        <div class="value" id="totalSubjects">0</div>
+      </div>
+      <div class="stat-card">
+        <h3>Total Credits</h3>
+        <div class="value" id="totalCredits">0</div>
+      </div>
+      <div class="stat-card">
+        <h3>Average Grade</h3>
+        <div class="value" id="avgGrade">0%</div>
+      </div>
+      <div class="stat-card">
+        <h3>Current SGPA</h3>
+        <div class="value" id="currentSGPA">0.00</div>
+      </div>
+    </div>
+
+    <div class="controls-section">
+      <div class="import-export">
+        <label for="fileInput" class="file-label">
+          <span>📁</span>
+          Import Data
+        </label>
+        <input type="file" id="fileInput" class="file-input" accept=".json,.csv">
+        <button onclick="exportData()" class="file-label">
+          <span>💾</span>
+          Export JSON
+        </button>
+        <button onclick="exportCSV()" class="file-label">
+          <span>📊</span>
+          Export CSV
+        </button>
+        <button onclick="clearAll()" class="file-label danger">
+          <span>🗑️</span>
+          Clear All
+        </button>
+      </div>
+    </div>
+
+    <div class="table-container">
+      <table id="subjectTable">
+        <thead>
+          <tr>
+            <th>Subject</th>
+            <th>Grade (%)</th>
+            <th>Credit Hours</th>
+            <th>GPA Points</th>
+            <th>Letter Grade</th>
+            <th>Total Points</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Rows will be added dynamically -->
+        </tbody>
+      </table>
+    </div>
+
+    <div class="button-container">
+      <button class="btn-primary" onclick="addRow()">
+        <span>➕</span>
+        Add Subject (Ctrl+N)
+      </button>
+      <button class="btn-secondary" onclick="calculateSGPA()">
+        <span>📊</span>
+        Calculate SGPA
+      </button>
+      <button class="btn-tertiary" onclick="addSampleData()">
+        <span>📝</span>
+        Add Sample Data
+      </button>
+    </div>
+
+    <div class="result-section" id="resultSection" style="display: none;">
+      <h3>Your Academic Performance</h3>
+      <div class="gpa-display" id="gpaDisplay">0.00</div>
+      <div class="combined-gpa" id="combinedGPA" style="display: none;"></div>
+      <div class="result-stats">
+        <div class="result-stat">
+          <div class="result-stat-label">Total Credit Hours</div>
+          <div class="result-stat-value" id="finalCredits">0</div>
+        </div>
+        <div class="result-stat">
+          <div class="result-stat-label">Total Grade Points</div>
+          <div class="result-stat-value" id="finalPoints">0.00</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // GPA calculation logic
+    function getGPA(score) {
+      if (score < 45) return 0.0;
+      if (score >= 90) return 4.0 - ((100 - score) * 0.02);
+      if (score >= 80) return 3.6 - ((90 - score) * 0.04);
+      if (score >= 70) return 2.8 - ((80 - score) * 0.04);
+      if (score >= 60) return 2.4 - ((70 - score) * 0.04);
+      if (score >= 50) return 2.0 - ((60 - score) * 0.04);
+      return 1.8 - ((50 - score) * 0.04);
+    }
+
+    function getLetterGrade(score) {
+      if (score >= 90) return 'A+';
+      if (score >= 80) return 'A';
+      if (score >= 70) return 'B+';
+      if (score >= 60) return 'B';
+      if (score >= 50) return 'C';
+      if (score >= 45) return 'D';
+      if (score > 0) return 'F';
+      return 'I';
+    }
+
+    function getGradeClass(letter) {
+      if (letter.includes('A')) return 'grade-a';
+      if (letter.includes('B')) return 'grade-b';
+      if (letter.includes('C')) return 'grade-c';
+      if (letter.includes('D')) return 'grade-d';
+      if (letter === 'F') return 'grade-f';
+      return 'grade-f';
+    }
+
+    // Add new row to the table
+    function addRow() {
+      const table = document.getElementById('subjectTable').getElementsByTagName('tbody')[0];
+      const newRow = table.insertRow();
+      newRow.innerHTML = `
+        <td data-label="Subject"><input type="text" name="subject" placeholder="Enter subject name"></td>
+        <td data-label="Grade"><input type="tel" pattern="[0-9]*" inputmode="decimal" name="grade" min="0" max="100" placeholder="0-100"></td>
+        <td data-label="Credits"><input type="tel" pattern="[0-9]*" inputmode="decimal" name="credit" min="0" step="0.5" placeholder="Credit hours"></td>
+        <td data-label="GPA Points" class="points">0.00</td>
+        <td data-label="Letter Grade" class="letter-grade">-</td>
+        <td data-label="Total Points" class="total-points">0.00</td>
+        <td data-label="Action"><button class="delete-btn" onclick="deleteRow(this)">×</button></td>
+      `;
+      attachEventListeners(newRow);
+      saveData();
+    }
+
+    // Delete row from table
+    function deleteRow(button) {
+      const row = button.closest('tr');
+      row.remove();
+      calculateSGPA();
+      saveData();
+    }
+
+    // Attach event listeners to row inputs
+    function attachEventListeners(row) {
+      const inputs = row.querySelectorAll('input');
+      inputs.forEach(input => {
+        input.addEventListener('input', updateRowCalculations);
+      });
+    }
+
+    // Update calculations for a single row
+    function updateRowCalculations() {
+      const rows = document.querySelectorAll('#subjectTable tbody tr');
+      rows.forEach(row => {
+        const grade = parseFloat(row.querySelector('input[name="grade"]').value) || 0;
+        const credit = parseFloat(row.querySelector('input[name="credit"]').value) || 0;
+        const gpa = getGPA(grade);
+        const points = gpa * credit;
+        const letter = getLetterGrade(grade);
+        
+        row.querySelector('.points').textContent = gpa.toFixed(2);
+        row.querySelector('.letter-grade').innerHTML = 
+          `<span class="grade-display ${getGradeClass(letter)}">${letter}</span>`;
+        row.querySelector('.total-points').textContent = points.toFixed(2);
+      });
+      
+      updateStats();
+      saveData();
+    }
+
+    // Update summary statistics
+    function updateStats() {
+      const rows = document.querySelectorAll('#subjectTable tbody tr');
+      let totalSubjects = 0;
+      let totalCredits = 0;
+      let totalGradeSum = 0;
+      let totalPoints = 0;
+      let validSubjects = 0;
+
+      rows.forEach(row => {
+        const grade = parseFloat(row.querySelector('input[name="grade"]').value) || 0;
+        const credit = parseFloat(row.querySelector('input[name="credit"]').value) || 0;
+        const subject = row.querySelector('input[name="subject"]').value.trim();
+        
+        if (subject) {
+          totalSubjects++;
+          if (grade > 0) {
+            totalGradeSum += grade;
+            validSubjects++;
+          }
+        }
+        
+        totalCredits += credit;
+        totalPoints += getGPA(grade) * credit;
+      });
+
+      document.getElementById('totalSubjects').textContent = totalSubjects;
+      document.getElementById('totalCredits').textContent = totalCredits.toFixed(1);
+      document.getElementById('avgGrade').textContent = 
+        validSubjects > 0 ? (totalGradeSum / validSubjects).toFixed(1) + '%' : '0%';
+      document.getElementById('currentSGPA').textContent = 
+        totalCredits > 0 ? (totalPoints / totalCredits).toFixed(2) : '0.00';
+    }
+
+    // Calculate and display SGPA
+    function calculateSGPA() {
+      updateRowCalculations();
+      
+      const rows = document.querySelectorAll('#subjectTable tbody tr');
+      let totalPoints = 0;
+      let totalCredits = 0;
+
+      rows.forEach(row => {
+        const grade = parseFloat(row.querySelector('input[name="grade"]').value) || 0;
+        const credit = parseFloat(row.querySelector('input[name="credit"]').value) || 0;
+        const gpa = getGPA(grade);
+        const points = gpa * credit;
+        
+        totalPoints += points;
+        totalCredits += credit;
+      });
+
+      const sgpa = totalCredits > 0 ? totalPoints / totalCredits : 0;
+      
+      document.getElementById('gpaDisplay').textContent = sgpa.toFixed(2);
+      document.getElementById('finalCredits').textContent = totalCredits.toFixed(1);
+      document.getElementById('finalPoints').textContent = totalPoints.toFixed(2);
+      document.getElementById('resultSection').style.display = 'block';
+      
+      // Calculate combined CGPA if values are provided
+      const currentCGPA = parseFloat(document.getElementById('currentCGPA').value);
+      const completedCredits = parseFloat(document.getElementById('totalCompletedCredits').value);
+      
+      if (!isNaN(currentCGPA) && !isNaN(completedCredits) && completedCredits > 0) {
+        const combinedGPA = ((currentCGPA * completedCredits) + (sgpa * totalCredits)) / (completedCredits + totalCredits);
+        const combinedElement = document.getElementById('combinedGPA');
+        combinedElement.textContent = `Projected CGPA: ${combinedGPA.toFixed(2)}`;
+        combinedElement.style.display = 'block';
+      } else {
+        document.getElementById('combinedGPA').style.display = 'none';
+      }
+    }
+
+    // Add sample data
+    function addSampleData() {
+      const sampleData = [
+        ['Anatomy', 85, 3],
+        ['Physiology', 78, 3],
+        ['Biochemistry', 92, 2],
+        ['Histology', 88, 2],
+        ['Dental Materials', 76, 2]
+      ];
+
+      const tbody = document.getElementById('subjectTable').getElementsByTagName('tbody')[0];
+      tbody.innerHTML = '';
+
+      sampleData.forEach(([subject, grade, credit]) => {
+        const newRow = tbody.insertRow();
+        newRow.innerHTML = `
+          <td data-label="Subject"><input type="text" name="subject" value="${subject}"></td>
+          <td data-label="Grade"><input type="tel" pattern="[0-9]*" inputmode="decimal" name="grade" value="${grade}"></td>
+          <td data-label="Credits"><input type="tel" pattern="[0-9]*" inputmode="decimal" name="credit" value="${credit}"></td>
+          <td data-label="GPA Points" class="points">0.00</td>
+          <td data-label="Letter Grade" class="letter-grade">-</td>
+          <td data-label="Total Points" class="total-points">0.00</td>
+          <td data-label="Action"><button class="delete-btn" onclick="deleteRow(this)">×</button></td>
+        `;
+        attachEventListeners(newRow);
+      });
+
+      calculateSGPA();
+    }
+
+    // Export data as JSON
+    function exportData() {
+      const rows = document.querySelectorAll('#subjectTable tbody tr');
+      const data = [];
+      
+      rows.forEach(row => {
+        const subject = row.querySelector('input[name="subject"]').value.trim();
+        const grade = parseFloat(row.querySelector('input[name="grade"]').value) || 0;
+        const credit = parseFloat(row.querySelector('input[name="credit"]').value) || 0;
+        
+        if (subject) {
+          data.push({ subject, grade, credit });
+        }
+      });
+
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'gpa_data.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    // Export data as CSV
+    function exportCSV() {
+      const rows = document.querySelectorAll('#subjectTable tbody tr');
+      let csv = 'Subject,Grade (%),Credit Hours,GPA Points,Letter Grade,Total Points\n';
+      
+      rows.forEach(row => {
+        const subject = row.querySelector('input[name="subject"]').value.trim();
+        const grade = row.querySelector('input[name="grade"]').value || '0';
+        const credit = row.querySelector('input[name="credit"]').value || '0';
+        const points = row.querySelector('.points').textContent;
+        const letter = row.querySelector('.letter-grade').textContent;
+        const total = row.querySelector('.total-points').textContent;
+        
+        if (subject) {
+          csv += `"${subject}",${grade},${credit},${points},${letter},${total}\n`;
+        }
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'gpa_data.csv';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    // Clear all data
+    function clearAll() {
+      if (confirm('Are you sure you want to clear all data?')) {
+        const tbody = document.getElementById('subjectTable').getElementsByTagName('tbody')[0];
+        tbody.innerHTML = '';
+        addRow();
+        document.getElementById('resultSection').style.display = 'none';
+        document.getElementById('currentCGPA').value = '';
+        document.getElementById('totalCompletedCredits').value = '';
+        updateStats();
+      }
+    }
+
+    // Save data to localStorage
+    function saveData() {
+      try {
+        const rows = document.querySelectorAll('#subjectTable tbody tr');
+        const data = [];
+        rows.forEach(row => {
+          data.push({
+            subject: row.querySelector('input[name="subject"]').value,
+            grade: row.querySelector('input[name="grade"]').value,
+            credit: row.querySelector('input[name="credit"]').value
+          });
+        });
+        localStorage.setItem('gpaData', JSON.stringify(data));
+      } catch (e) {
+        console.error("Error saving data:", e);
+      }
+    }
+
+    // Load data from localStorage
+    function loadData() {
+      try {
+        const savedData = localStorage.getItem('gpaData');
+        if (savedData) {
+          const data = JSON.parse(savedData);
+          const tbody = document.querySelector('#subjectTable tbody');
+          tbody.innerHTML = '';
+          data.forEach(item => {
+            const row = tbody.insertRow();
+            row.innerHTML = `
+              <td data-label="Subject"><input type="text" name="subject" value="${item.subject}"></td>
+              <td data-label="Grade"><input type="tel" pattern="[0-9]*" inputmode="decimal" name="grade" value="${item.grade}"></td>
+              <td data-label="Credits"><input type="tel" pattern="[0-9]*" inputmode="decimal" name="credit" value="${item.credit}"></td>
+              <td data-label="GPA Points" class="points">0.00</td>
+              <td data-label="Letter Grade" class="letter-grade">-</td>
+              <td data-label="Total Points" class="total-points">0.00</td>
+              <td data-label="Action"><button class="delete-btn" onclick="deleteRow(this)">×</button></td>
+            `;
+            attachEventListeners(row);
+          });
+          calculateSGPA();
+        } else {
+          addRow();
+        }
+      } catch (e) {
+        console.error("Error loading data:", e);
+        addRow();
+      }
+    }
+
+    // Handle file import
+    function setupFileImport() {
+      const fileInput = document.getElementById('fileInput');
+      fileInput.addEventListener('change', function(e) {
+        if (e.target.files.length === 0) return;
+        
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        
+        reader.onload = function(event) {
+          try {
+            const data = JSON.parse(event.target.result);
+            const tbody = document.querySelector('#subjectTable tbody');
+            tbody.innerHTML = '';
+            
+            data.forEach(item => {
+              const row = tbody.insertRow();
+              row.innerHTML = `
+                <td data-label="Subject"><input type="text" name="subject" value="${item.subject}"></td>
+                <td data-label="Grade"><input type="tel" pattern="[0-9]*" inputmode="decimal" name="grade" value="${item.grade}"></td>
+                <td data-label="Credits"><input type="tel" pattern="[0-9]*" inputmode="decimal" name="credit" value="${item.credit}"></td>
+                <td data-label="GPA Points" class="points">0.00</td>
+                <td data-label="Letter Grade" class="letter-grade">-</td>
+                <td data-label="Total Points" class="total-points">0.00</td>
+                <td data-label="Action"><button class="delete-btn" onclick="deleteRow(this)">×</button></td>
+              `;
+              attachEventListeners(row);
+            });
+            
+            calculateSGPA();
+            fileInput.value = '';
+          } catch (error) {
+            alert("Error reading file. Please make sure it's a valid JSON file.");
+            console.error("File import error:", error);
+          }
+        };
+        
+        reader.readAsText(file);
+      });
+    }
+
+    // Initialize the app
+    function initApp() {
+      loadData();
+      setupFileImport();
+      
+      // Set data-label attributes for responsive table
+      const headers = ['Subject', 'Grade (%)', 'Credit Hours', 'GPA Points', 'Letter Grade', 'Total Points', 'Action'];
+      document.querySelectorAll('#subjectTable th').forEach((th, i) => {
+        document.querySelectorAll('#subjectTable td:nth-child(' + (i+1) + ')').forEach(td => {
+          td.setAttribute('data-label', headers[i]);
+        });
+      });
+      
+      // Add event listeners to CGPA inputs
+      document.getElementById('currentCGPA').addEventListener('input', calculateSGPA);
+      document.getElementById('totalCompletedCredits').addEventListener('input', calculateSGPA);
+      
+      // Add touch handler to dismiss keyboard
+      document.addEventListener('touchstart', function(e) {
+        if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'BUTTON') {
+          document.activeElement.blur();
+        }
+      });
+
+      // Add initial row if empty
+      if (document.querySelectorAll('#subjectTable tbody tr').length === 0) {
+        addRow();
+      }
+    }
+
+    // Show preview warning
+    function showPreviewWarning() {
+      const container = document.querySelector('.container');
+      container.innerHTML = `
+        <div class="header">
+          <h1>iPhone Preview Limitation</h1>
+        </div>
+        <div class="preview-warning">
+          <p>This calculator doesn't work properly in iPhone's preview mode.</p>
+          <p>Please open it in Safari:</p>
+          <ol>
+            <li>Tap the share button</li>
+            <li>Select "Open in Safari"</li>
+            <li>Use the calculator normally</li>
+          </ol>
+          <button onclick="location.reload()" style="
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 4px;
+            font-size: 1rem;
+            margin-top: 20px;
+          ">I've opened in Safari - Reload</button>
+        </div>
+      `;
+    }
+
+    // Check environment and initialize appropriately
+    document.addEventListener('DOMContentLoaded', function() {
+      if (window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches) {
+        // Running as PWA
+        initApp();
+      } else if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+        // Check if running in preview mode
+        if (window.location.protocol === 'file:') {
+          showPreviewWarning();
+        } else {
+          initApp();
+        }
+      } else {
+        initApp();
+      }
+    });
+  </script>
+</body>
+</html>
