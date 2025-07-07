@@ -63,6 +63,7 @@
       display: flex;
       flex-wrap: wrap;
       gap: 15px;
+      justify-content: center;
     }
 
     .cgpa-input {
@@ -121,6 +122,7 @@
       gap: 10px;
       margin-bottom: 20px;
       flex-wrap: wrap;
+      justify-content: center;
     }
 
     .file-input {
@@ -391,9 +393,9 @@
           Import Data
         </label>
         <input type="file" id="fileInput" class="file-input" accept=".json,.csv">
-        <button onclick="exportData()" class="file-label">
-          <span>💾</span>
-          Export JSON
+        <button onclick="exportPDF()" class="file-label">
+          <span>📄</span>
+          Export PDF
         </button>
         <button onclick="exportCSV()" class="file-label">
           <span>📊</span>
@@ -645,28 +647,14 @@
       calculateSGPA();
     }
 
-    // Export data as JSON
-    function exportData() {
-      const rows = document.querySelectorAll('#subjectTable tbody tr');
-      const data = [];
-      
-      rows.forEach(row => {
-        const subject = row.querySelector('input[name="subject"]').value.trim();
-        const grade = parseFloat(row.querySelector('input[name="grade"]').value) || 0;
-        const credit = parseFloat(row.querySelector('input[name="credit"]').value) || 0;
-        
-        if (subject) {
-          data.push({ subject, grade, credit });
-        }
-      });
-
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'gpa_data.json';
-      a.click();
-      URL.revokeObjectURL(url);
+    // Export data as PDF
+    function exportPDF() {
+      alert("PDF export functionality would be implemented here. This would typically use a library like jsPDF or a server-side solution.");
+      // In a real implementation, you would use a library like jsPDF to generate a PDF
+      // Example:
+      // const doc = new jsPDF();
+      // doc.text('GPA Report', 10, 10);
+      // doc.save('gpa_report.pdf');
     }
 
     // Export data as CSV
