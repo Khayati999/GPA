@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GPA Calculator</title>
+  <style>
+    /* ...existing CSS, unchanged... */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #ffffff; min-height: 100vh; padding: 20px; color: #333333; }
+    .container { max-width: 1200px; margin: 0 auto; background: white; border-radius: 8px; padding: 30px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05); border: 1px solid #e0e0e0; }
+    .header { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #e0e0e0; }
+    .header h1 { color: #2c3e50; font-size: 2.2rem; font-weight: 700; margin-bottom: 5px; }
+    .header h2 { color: #7f8c8d; font-size: 1.1rem; font-weight: 500; margin-bottom: 5px; }
+    .header p { color: #95a5a6; font-size: 0.8rem; }
+    .cgpa-section { background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; }
+    .cgpa-input { display: flex; align-items: center; gap: 10px; }
+    .cgpa-input label { font-weight: 600; color: #2c3e50; }
+    .cgpa-input input { padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; width: 80px; }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
+    .stat-card { background: #f8f9fa; border: 1px solid #e0e0e0; padding: 15px; border-radius: 8px; text-align: center; }
+    .stat-card h3 { font-size: 0.8rem; font-weight: 600; color: #7f8c8d; margin-bottom: 10px; text-transform: uppercase; }
+    .stat-card .value { font-size: 1.5rem; font-weight: 700; color: #2c3e50; }
+    .controls-section { margin-bottom: 20px; }
+    .import-export { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; justify-content: center; }
+    .file-input { display: none; }
+    .file-label, .control-btn { display: inline-flex; align-items: center; gap: 5px; padding: 8px 12px; background: #ecf0f1; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-weight: 500; color: #2c3e50; }
+    .file-label.danger { background: #ffecec; border-color: #ffd1d1; color: #e74c3c; }
+    .table-container { overflow-x: auto; border-radius: 8px; border: 1px solid #e0e0e0; margin-bottom: 20px; background: white; }
+    table { width: 100%; border-collapse: collapse; }
+    th { background: #f8f9fa; color: #2c3e50; padding: 12px; text-align: center; font-weight: 600; font-size: 0.8rem; border-bottom: 1px solid #e0e0e0; }
+    td { padding: 12px; text-align: center; border-bottom: 1px solid #f0f0f0; }
+    input[type="text"], input[type="number"] { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.8rem; background: white; color: #333; }
+    .points, .total-points { font-weight: 600; color: #3498db; font-size: 0.8rem; }
+    .grade-display { display: inline-block; padding: 3px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: 600; }
+    .grade-a\+ { background: #d1f2eb; color: #117864; }
+    .grade-a { background: #e8f5e9; color: #2e7d32; }
+    .grade-b\+ { background: #e1f5fe; color: #0277bd; }
+    .grade-b { background: #e3f2fd; color: #1565c0; }
+    .grade-c { background: #fff3e0; color: #e65100; }
+    .grade-d { background: #fff8e1; color: #ff8f00; }
+    .grade-f { background: #ffebee; color: #c62828; }
+    .button-container { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-bottom: 20px; }
+    button { display: inline-flex; align-items: center; gap: 5px; padding: 10px 15px; border: none; border-radius: 4px; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
+    .btn-primary { background: #3498db; color: white; }
+    .btn-secondary { background: #9b59b6; color: white; }
+    .btn-tertiary { background: #2ecc71; color: white; }
+    .delete-btn { background: #e74c3c; color: white; border-radius: 4px; width: 28px; height: 28px; font-size: 14px; display: flex; align-items: center; justify-content: center; }
+    .result-section { background: #f8f9fa; border: 1px solid #e0e0e0; padding: 20px; border-radius: 8px; text-align: center; margin-top: 20px; }
+    .result-section h3 { font-size: 1.2rem; font-weight: 600; color: #2c3e50; margin-bottom: 15px; }
+    .gpa-display { font-size: 3rem; font-weight: 700; color: #3498db; margin: 10px 0; }
+    .combined-gpa { font-size: 1.2rem; font-weight: 600; color: #2c3e50; margin: 15px 0; }
+    .result-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-top: 15px; }
+    .result-stat { background: white; border: 1px solid #e0e0e0; padding: 12px; border-radius: 4px; }
+    .result-stat-label { font-size: 0.7rem; color: #7f8c8d; margin-bottom: 5px; }
+    .result-stat-value { font-size: 1rem; font-weight: 600; color: #2c3e50; }
+    @media (max-width: 768px) {
+      .container { padding: 20px; }
+      .header h1 { font-size: 1.8rem; }
+      .cgpa-section { flex-direction: column; }
+      .button-container { flex-direction: column; }
+      button { width: 100%; }
+    }
+    @media (max-width: 480px) {
+      .stats-grid { grid-template-columns: 1fr; }
+      #subjectTable td::before { content: attr(data-label); font-weight: 600; color: #7f8c8d; margin-right: auto; padding-right: 10px; }
+    }
+    /* Modal styles */
+    .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0, 0, 0, 0.7); justify-content: center; align-items: center; }
+    .modal-content { background-color: #fefefe; margin: 15% auto; padding: 20px; border: 1px solid #888; border-radius: 8px; width: 80%; max-width: 500px; position: relative; }
+    .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; }
+    .close:hover, .close:focus { color: black; text-decoration: none; cursor: pointer; }
+    #semesterCGPAModal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.3); z-index: 1000; align-items: center; justify-content: center; }
+    #semesterCGPAModal[style*="display: flex"] { display: flex !important; }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Strategic GPA Calculator</h1>
+      <h2>University of Khartoum -Faculty of Dentistry</h2>
+      <h2>Created By Khalid Omer B49</h2>
+    </div>
+
+    <!-- NEW STRATEGIC GPA PLANNER GUIDE -->
+    <div class="help-section" style="margin-bottom:20px;background:#f8f9fa;padding:15px;border-radius:8px;border:1px solid #e0e0e0;">
+      <details>
+        <summary style="font-weight:600;cursor:pointer;color:#3498db;display:flex;align-items:center;gap:5px;">
+          <span>❓</span> How to Use This Calculator 
+        </summary>
+        <div style="margin-top:10px;font-size:0.9rem;line-height:1.6;">
+          <h3 style="color:#2c3e50;font-size:1rem;margin-bottom:10px;border-bottom:1px solid #e0e0e0;padding-bottom:5px;">Plan Your Academic Success:</h3>
+          
+          <div style="display:grid;grid-template-columns:28px 1fr;gap:10px;margin-bottom:15px;align-items:center;">
+            <div style="background:#3498db;color:white;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:bold;">1</div>
+            <div>
+              <strong>Calculate Existing CGPA</strong><br>
+              Click <button class="btn-tertiary" style="padding:2px 8px;font-size:0.8rem;cursor:default;" disabled>Calc CGPA</button> to enter:<br>
+              • Previous semester GPAs<br>
+              • Their credit hours<br>
+              <em style="color:#7f8c8d;font-size:0.8rem;">(This sets your academic baseline)</em>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:28px 1fr;gap:10px;margin-bottom:15px;align-items:center;">
+            <div style="background:#2ecc71;color:white;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:bold;">2</div>
+            <div>
+              <strong>Project Current Semester</strong><br>
+              Add subjects using <button class="btn-primary" style="padding:2px 8px;font-size:0.8rem;cursor:default;" disabled>Add Subject</button> and enter:<br>
+              • <span style="color:#e74c3c;">Real grades</span> (if available) OR<br>
+              • <span style="color:#2ecc71;">Projected grades</span> (for planning)<br>
+              <em style="color:#7f8c8d;font-size:0.8rem;">(Try different grade scenarios to see their impact)</em>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:28px 1fr;gap:10px;align-items:center;">
+            <div style="background:#9b59b6;color:white;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:bold;">3</div>
+            <div>
+              <strong>Optimize Your Strategy</strong><br>
+              Check the <span style="font-weight:600;color:#3498db;">Projected CGPA</span> in results and:<br>
+              • Identify which subjects need grade improvement<br>
+              • See how credit hours affect your CGPA<br>
+              <em style="color:#7f8c8d;font-size:0.8rem;">(Better planning → Better grades → Higher CGPA)</em>
+            </div>
+          </div>
+
+          <div style="margin-top:15px;background:#e8f4fd;padding:10px;border-radius:4px;border-left:3px solid #3498db;font-size:0.85rem;">
+            <strong>📊 Pro Tip:</strong> Use <button class="control-btn" style="padding:2px 8px;font-size:0.8rem;cursor:default;margin:0 3px;" disabled>Export PDF</button> to save different grade scenarios for comparison.
+          </div>
+        </div>
+      </details>
+    </div>
+    
+    <div class="cgpa-section">
+      <div class="cgpa-input">
+        <label for="currentCGPA">Current CGPA:</label>
+        <input type="number" id="currentCGPA" min="0" max="4" step="0.01" placeholder="0.00">
+        <button type="button" onclick="openSemesterModal()" class="btn-tertiary" style="margin-left:8px; font-size:0.8rem;">Calc CGPA</button>
+      </div>
+      <div class="cgpa-input">
+        <label for="totalCompletedCredits">Completed Credits:</label>
+        <input type="number" id="totalCompletedCredits" min="0" step="0.5" placeholder="0">
+      </div>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <h3>Total Subjects</h3>
+        <div class="value" id="totalSubjects">0</div>
+      </div>
+      <div class="stat-card">
+        <h3>Total Credits</h3>
+        <div class="value" id="totalCredits">0</div>
+      </div>
+      <div class="stat-card">
+        <h3>Average Grade</h3>
+        <div class="value" id="avgGrade">0%</div>
+      </div>
+      <div class="stat-card">
+        <h3>Current SGPA</h3>
+        <div class="value" id="currentSGPA">0.00</div>
+      </div>
+    </div>
+    <div class="controls-section">
+      <div class="import-export">
+        <label for="fileInput" class="file-label">
+          <span>📁</span>
+          Import Data
+        </label>
+        <input type="file" id="fileInput" class="file-input" accept=".json,.csv">
+        <button onclick="exportPDF()" class="control-btn">
+          <span>📄</span>
+          Export PDF
+        </button>
+        <button onclick="exportCSV()" class="control-btn">
+          <span>📊</span>
+          Export CSV
+        </button>
+        <button onclick="clearAll()" class="control-btn danger">
+          <span>🗑️</span>
+          Clear All
+        </button>
+      </div>
+    </div>
+    <div class="table-container">
+      <table id="subjectTable">
+        <thead>
+          <tr>
+            <th>Subject</th>
+            <th>Grade (%)</th>
+            <th>Credit Hours</th>
+            <th>GPA Points</th>
+            <th>Letter Grade</th>
+            <th>Total Points</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Rows will be added dynamically -->
+        </tbody>
+      </table>
+    </div>
+    <div class="button-container">
+      <button class="btn-primary" onclick="addRow()">
+        <span>➕</span>
+        Add Subject (Ctrl+Shift+A)
+      </button>
+      <button class="btn-secondary" onclick="calculateSGPA()">
+        <span>📊</span>
+        Calculate SGPA
+      </button>
+      <button class="btn-tertiary" onclick="addSampleData()">
+        <span>📝</span>
+        Add Sample Data
+      </button>
+    </div>
+    <div class="result-section" id="resultSection" style="display: none;">
+      <h3>Your Academic Performance</h3>
+      <div class="gpa-display" id="gpaDisplay">0.00</div>
+      <div class="combined-gpa" id="combinedGPA" style="display: none;"></div>
+      <div class="result-stats">
+        <div class="result-stat">
+          <div class="result-stat-label">Total Credit Hours</div>
+          <div class="result-stat-value" id="finalCredits">0</div>
+        </div>
+        <div class="result-stat">
+          <div class="result-stat-label">Total Grade Points</div>
+          <div class="result-stat-value" id="finalPoints">0.00</div>
+        </div>
+      </div>
+    </div>
+    <!-- Semester CGPA Modal -->
+    <div id="semesterCGPAModal" class="modal" tabindex="-1" aria-modal="true" role="dialog" aria-labelledby="cgpaModalTitle">
+      <div class="modal-content">
+        <span class="close" onclick="closeSemesterModal()" tabindex="0" aria-label="Close CGPA window">&times;</span>
+        <h2 id="cgpaModalTitle" style="text-align:center;">Calculate CGPA for Previous Semesters</h2>
+        <div class="cgpa-section" style="margin-top:10px;">
+          <table id="modalSemesterGPATable" style="width:100%;">
+            <thead>
+              <tr>
+                <th>Semester</th>
+                <th>GPA <span title="Enter GPA for the semester">(?)</span></th>
+                <th>Credits <span title="Total credits for the semester">(?)</span></th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Rows will be added dynamically -->
+            </tbody>
+          </table>
+          <button type="button" onclick="addModalSemesterRow()" class="btn-tertiary" style="margin-top:8px;" aria-label="Add Semester">➕ Add Semester</button>
+          <div id="modalSemesterCGPADisplay" style="margin:10px 0;font-weight:600;color:#2c3e50;"></div>
+          <div id="modalSemesterError" style="color:#e74c3c;font-weight:600;margin-bottom:5px;display:none;"></div>
+        </div>
+        <button type="button" onclick="applyModalSemesterCGPA()" class="btn-primary" style="margin-top:10px;width:100%;" aria-label="Apply CGPA">Apply CGPA</button>
+        <button type="button" onclick="closeSemesterModal()" class="btn-secondary" style="margin-top:10px;width:100%;" aria-label="Close CGPA window">Close</button>
+      </div>
+    </div>
+  </div>
+  <script>
+  // Toast notification
+  function showToast(msg, color = "#2ecc71") {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.style.background = color;
+    toast.style.display = 'block';
+    setTimeout(() => { toast.style.display = 'none'; }, 2000);
+  }
+
+  // GPA calculation logic
+  const { jsPDF } = window.jspdf;
+  function getGPA(score) {
+    const exactGPA = {
+      100: 4.00, 99: 3.96, 98: 3.92, 97: 3.88, 96: 3.84, 95: 3.80, 94: 3.76, 93: 3.72, 92: 3.68, 91: 3.64,
+      90: 3.60, 89: 3.59, 88: 3.55, 87: 3.50, 86: 3.46, 85: 3.42, 84: 3.37, 83: 3.33, 82: 3.29, 81: 3.24,
+      80: 3.20, 79: 3.19, 78: 3.15, 77: 3.10, 76: 3.06, 75: 3.02, 74: 2.97, 73: 2.93, 72: 2.89, 71: 2.84,
+      70: 2.80, 69: 2.79, 68: 2.75, 67: 2.70, 66: 2.66, 65: 2.62, 64: 2.57, 63: 2.53, 62: 2.49, 61: 2.44,
+      60: 2.40, 59: 2.39, 58: 2.35, 57: 2.30, 56: 2.26, 55: 2.22, 54: 2.17, 53: 2.13, 52: 2.09, 51: 2.04,
+      50: 2.00, 49: 1.99, 48: 1.94, 47: 1.90, 46: 1.85, 45: 1.80
+
+    };
+    if (exactGPA.hasOwnProperty(score)) return exactGPA[score];
+    if (score < 45) return 0.0;
+    const flooredScore = Math.floor(score);
+    let lowerScore = flooredScore;
+    let higherScore = flooredScore + 1;
+    if (lowerScore === 100) return 4.00;
+    if (higherScore > 100) higherScore = 100;
+    while (lowerScore >= 45 && !exactGPA.hasOwnProperty(lowerScore)) lowerScore--;
+    while (higherScore <= 100 && !exactGPA.hasOwnProperty(higherScore)) higherScore++;
+    if (lowerScore >= 45 && higherScore <= 100) {
+      const lowerGPA = exactGPA[lowerScore];
+      const higherGPA = exactGPA[higherScore];
+      return lowerGPA + (higherGPA - lowerGPA) * (score - lowerScore) / (higherScore - lowerScore);
+    }
+    return 0.0;
+  }
+  function getLetterGrade(score) {
+    if (score >= 90) return 'A+';
+    if (score >= 80) return 'A';
+    if (score >= 70) return 'B+';
+    if (score >= 60) return 'B';
+    if (score >= 50) return 'C';
+    if (score >= 45) return 'D';
+    return 'F';
+  }
+  function getGradeClass(letter) {
+    switch (letter) {
+      case 'A+': return 'grade-a+';
+      case 'A': return 'grade-a';
+      case 'B+': return 'grade-b+';
+      case 'B': return 'grade-b';
+      case 'C': return 'grade-c';
+      case 'D': return 'grade-d';
+      case 'F': return 'grade-f';
+      default: return '';
+    }
+  }
+  function addRow() {
+    const table = document.getElementById('subjectTable').getElementsByTagName('tbody')[0];
+    const newRow = table.insertRow();
+    newRow.innerHTML = `
+      <td data-label="Subject"><input type="text" name="subject" placeholder="Enter subject name" required aria-required="true"></td>
+      <td data-label="Grade"><input type="number" name="grade" min="0" max="100" placeholder="0-100" required aria-required="true"></td>
+      <td data-label="Credits"><input type="number" name="credit" min="0" step="0.5" placeholder="Credit hours" required aria-required="true"></td>
+      <td data-label="GPA Points" class="points">0.00</td>
+      <td data-label="Letter Grade" class="letter-grade">-</td>
+      <td data-label="Total Points" class="total-points">0.00</td>
+      <td data-label="Action"><button class="delete-btn" onclick="deleteRow(this)" aria-label="Delete row" title="Delete row">×</button></td>
+    `;
+    attachEventListeners(newRow);
+    assignDataLabels();
+    updateRowCalculations();
+    newRow.querySelector('input[name="subject"]').focus();
+    showToast("New subject row added");
+  }
+  function deleteRow(button) {
+    if (!confirm("Delete this subject row?")) return;
+    const row = button.closest('tr');
+    row.remove();
+    updateRowCalculations();
+    showToast("Subject row deleted", "#e74c3c");
+  }
+  function attachEventListeners(row) {
+    const inputs = row.querySelectorAll('input');
+    inputs.forEach(input => {
+      input.addEventListener('input', updateRowCalculations);
+    });
+  }
+  function updateRowCalculations() {
+    const rows = document.querySelectorAll('#subjectTable tbody tr');
+    const subjects = [];
+    rows.forEach(row => {
+      const subjectInput = row.querySelector('input[name="subject"]');
+      const subject = subjectInput.value.trim();
+      if (subject && subjects.includes(subject)) {
+        subjectInput.style.borderColor = "#e74c3c";
+        subjectInput.title = "Duplicate subject name!";
+      } else {
+        subjectInput.style.borderColor = "";
+        subjectInput.title = "";
+        if (subject) subjects.push(subject);
+      }
+      const grade = parseFloat(row.querySelector('input[name="grade"]').value) || 0;
+      const credit = parseFloat(row.querySelector('input[name="credit"]').value) || 0;
+      const gpa = getGPA(grade);
+      const points = gpa * credit;
+      const letter = getLetterGrade(grade);
+      row.querySelector('.points').textContent = gpa.toFixed(2);
+      row.querySelector('.letter-grade').innerHTML =
+        `<span class="grade-display ${getGradeClass(letter)}">${letter}</span>`;
+      row.querySelector('.total-points').textContent = points.toFixed(2);
+      row.querySelectorAll('input').forEach(input => {
+        if (input.hasAttribute('required') && !input.value) {
+          input.style.borderColor = "#e67e22";
+        } else {
+          input.style.borderColor = "";
+        }
+      });
+    });
+    updateStats();
+    saveData();
+  }
+  function updateStats() {
+    const rows = document.querySelectorAll('#subjectTable tbody tr');
+    let totalSubjects = 0;
+    let totalCredits = 0;
+    let totalGradeSum = 0;
+    let totalPoints = 0;
+    let validSubjects = 0;
+    rows.forEach(row => {
+      const grade = parseFloat(row.querySelector('input[name="grade"]').value) || 0;
+      const credit = parseFloat(row.querySelector('input[name="credit"]').value) || 0;
+      const subject = row.querySelector('input[name="subject"]').value.trim();
+      if (subject) {
+        totalSubjects++;
+        if (grade > 0) {
+          totalGradeSum += grade;
+          validSubjects++;
+        }
+      }
+      totalCredits += credit;
+      totalPoints += getGPA(grade) * credit;
+    });
+    document.getElementById('totalSubjects').textContent = totalSubjects;
+    document.getElementById('totalCredits').textContent = totalCredits.toFixed(1);
+    document.getElementById('avgGrade').textContent =
+      validSubjects > 0 ? (totalGradeSum / validSubjects).toFixed(1) + '%' : '0%';
+    document.getElementById('currentSGPA').textContent =
+      totalCredits > 0 ? (totalPoints / totalCredits).toFixed(2) : '0.00';
+  }
+  function calculateSGPA() {
+    const rows = document.querySelectorAll('#subjectTable tbody tr');
+    let totalPoints = 0;
+    let totalCredits = 0;
+    rows.forEach(row => {
+      const subject = row.querySelector('input[name="subject"]').value.trim();
+      if (!subject) return;
+      const grade = parseFloat(row.querySelector('input[name="grade"]').value) || 0;
+      const credit = parseFloat(row.querySelector('input[name="credit"]').value) || 0;
+      const gpa = getGPA(grade);
+      const points = gpa * credit;
+      totalPoints += points;
+      totalCredits += credit;
+    });
+    const sgpa = totalCredits > 0 ? totalPoints / totalCredits : 0;
+    document.getElementById('gpaDisplay').textContent = sgpa.toFixed(2);
+    document.getElementById('finalCredits').textContent = totalCredits.toFixed(1);
+    document.getElementById('finalPoints').textContent = totalPoints.toFixed(2);
+    document.getElementById('resultSection').style.display = 'block';
+    const currentCGPA = parseFloat(document.getElementById('currentCGPA').value);
+    const completedCredits = parseFloat(document.getElementById('totalCompletedCredits').value);
+    if (!isNaN(currentCGPA) && !isNaN(completedCredits) && completedCredits > 0) {
+      const combinedGPA = ((currentCGPA * completedCredits) + (sgpa * totalCredits)) / (completedCredits + totalCredits);
+      const combinedElement = document.getElementById('combinedGPA');
+      combinedElement.textContent = `Projected CGPA: ${combinedGPA.toFixed(2)}`;
+      combinedElement.style.display = 'block';
+    } else {
+      document.getElementById('combinedGPA').style.display = 'none';
+    }
+  }
+  function addSampleData() {
+    const sampleData = [
+      ['Anatomy', 85, 3],
+      ['Physiology', 78, 3],
+      ['Biochemistry', 92, 2],
+      ['Histology', 88, 2],
+      ['Dental Materials', 76, 2]
+    ];
+    const tbody = document.getElementById('subjectTable').getElementsByTagName('tbody')[0];
+    tbody.innerHTML = '';
+    sampleData.forEach(([subject, grade, credit]) => {
+      const newRow = tbody.insertRow();
+      newRow.innerHTML = `
+        <td data-label="Subject"><input type="text" name="subject" value="${subject}"></td>
+        <td data-label="Grade"><input type="number" name="grade" value="${grade}"></td>
+        <td data-label="Credits"><input type="number" name="credit" value="${credit}"></td>
+        <td data-label="GPA Points" class="points">0.00</td>
+        <td data-label="Letter Grade" class="letter-grade">-</td>
+        <td data-label="Total Points" class="total-points">0.00</td>
+        <td data-label="Action"><button class="delete-btn" onclick="deleteRow(this)">×</button></td>
+      `;
+      attachEventListeners(newRow);
+    });
+    assignDataLabels();
+    updateRowCalculations();
+    showToast("Sample data added");
+  }
+  function exportPDF() {
+    const rows = document.querySelectorAll('#subjectTable tbody tr');
+    if (rows.length === 0) {
+      alert('No data to export!');
+      return;
+    }
+    const doc = new jsPDF();
+    doc.setFontSize(18);
+    doc.setTextColor(40, 40, 40);
+    doc.text('University of Khartoum - GPA Report', 105, 15, { align: 'center' });
+    doc.setFontSize(12);
+    doc.text('Faculty of Dentistry', 105, 22, { align: 'center' });
+    const today = new Date();
+    doc.setFontSize(10);
+    doc.text(`Generated on: ${today.toLocaleDateString()}`, 105, 30, { align: 'center' });
+    const currentCGPA = document.getElementById('currentCGPA').value;
+    const completedCredits = document.getElementById('totalCompletedCredits').value;
+    if (currentCGPA && completedCredits) {
+      doc.setFontSize(12);
+      doc.text(`Current CGPA: ${currentCGPA} (${completedCredits} credits)`, 14, 40);
+    }
+    doc.setFontSize(12);
+    doc.text(`Current SGPA: ${document.getElementById('gpaDisplay').textContent}`, 14, 50);
+    const headers = [
+      "Subject", "Grade (%)", "Credit Hours", "GPA Points", "Letter Grade", "Total Points"
+    ];
+    const rowsData = [];
+    document.querySelectorAll('#subjectTable tbody tr').forEach(row => {
+      const subject = row.querySelector('input[name="subject"]').value.trim();
+      if (subject) {
+        rowsData.push([
+          subject,
+          row.querySelector('input[name="grade"]').value || '0',
+          row.querySelector('input[name="credit"]').value || '0',
+          row.querySelector('.points').textContent,
+          row.querySelector('.letter-grade').textContent,
+          row.querySelector('.total-points').textContent
+        ]);
+      }
+    });
+    doc.autoTable({
+      head: [headers],
+      body: rowsData,
+      startY: 60,
+      theme: 'grid',
+      headStyles: {
+        fillColor: [248, 249, 250],
+        textColor: [44, 62, 80],
+        fontStyle: 'bold'
+      },
+      alternateRowStyles: {
+        fillColor: [248, 249, 250]
+      }
+    });
+    const finalY = doc.lastAutoTable.finalY + 10;
+    doc.setFontSize(10);
+    doc.setTextColor(100, 100, 100);
+    doc.text('Created by Khalid Omer B49', 105, finalY, { align: 'center' });
+    doc.save('gpa_report.pdf');
+    showToast("PDF exported");
+  }
+  function exportCSV() {
+    const rows = document.querySelectorAll('#subjectTable tbody tr');
+    let csv = 'Subject,Grade (%),Credit Hours,GPA Points,Letter Grade,Total Points\n';
+    rows.forEach(row => {
+      const subject = row.querySelector('input[name="subject"]').value.trim();
+      const grade = row.querySelector('input[name="grade"]').value || '0';
+      const credit = row.querySelector('input[name="credit"]').value || '0';
+      const points = row.querySelector('.points').textContent;
+      const letter = row.querySelector('.letter-grade').textContent;
+      const total = row.querySelector('.total-points').textContent;
+      if (subject) {
+        csv += `"${subject}",${grade},${credit},${points},${letter},${total}\n`;
+      }
+    });
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'gpa_data.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast("CSV exported");
+  }
+  function clearAll() {
+    if (confirm('Are you sure you want to clear all data?')) {
+      const tbody = document.getElementById('subjectTable').getElementsByTagName('tbody')[0];
+      tbody.innerHTML = '';
+      addRow();
+      document.getElementById('resultSection').style.display = 'none';
+      document.getElementById('currentCGPA').value = '';
+      document.getElementById('totalCompletedCredits').value = '';
+      updateRowCalculations();
+      showToast("All data cleared", "#e74c3c");
+    }
+  }
+  function saveData() {
+    try {
+      const rows = document.querySelectorAll('#subjectTable tbody tr');
+      const data = [];
+      rows.forEach(row => {
+        data.push({
+          subject: row.querySelector('input[name="subject"]').value,
+          grade: row.querySelector('input[name="grade"]').value,
+          credit: row.querySelector('input[name="credit"]').value
+        });
+      });
+      localStorage.setItem('gpaData', JSON.stringify(data));
+      localStorage.setItem('currentCGPA', document.getElementById('currentCGPA').value);
+      localStorage.setItem('totalCompletedCredits', document.getElementById('totalCompletedCredits').value);
+    } catch (e) {
+      showToast("Could not save data to local storage", "#e74c3c");
+    }
+  }
+  function loadData() {
+    const savedData = localStorage.getItem('gpaData');
+    const savedCGPA = localStorage.getItem('currentCGPA');
+    const savedCredits = localStorage.getItem('totalCompletedCredits');
+    if (savedCGPA) document.getElementById('currentCGPA').value = savedCGPA;
+    if (savedCredits) document.getElementById('totalCompletedCredits').value = savedCredits;
+    if (savedData) {
+      const data = JSON.parse(savedData);
+      const tbody = document.querySelector('#subjectTable tbody');
+      tbody.innerHTML = '';
+      data.forEach(item => {
+        const row = tbody.insertRow();
+        row.innerHTML = `
+          <td data-label="Subject"><input type="text" name="subject" value="${item.subject}"></td>
+          <td data-label="Grade"><input type="number" name="grade" value="${item.grade}"></td>
+          <td data-label="Credits"><input type="number" name="credit" value="${item.credit}"></td>
+          <td data-label="GPA Points" class="points">0.00</td>
+          <td data-label="Letter Grade" class="letter-grade">-</td>
+          <td data-label="Total Points" class="total-points">0.00</td>
+          <td data-label="Action"><button class="delete-btn" onclick="deleteRow(this)">×</button></td>
+        `;
+        attachEventListeners(row);
+      });
+      assignDataLabels();
+      calculateSGPA();
+    } else {
+      addRow();
+    }
+  }
+  function assignDataLabels() {
+    const headers = ['Subject', 'Grade (%)', 'Credit Hours', 'GPA Points', 'Letter Grade', 'Total Points', 'Action'];
+    document.querySelectorAll('#subjectTable tbody tr').forEach(row => {
+      row.querySelectorAll('td').forEach((td, i) => {
+        td.setAttribute('data-label', headers[i]);
+      });
+    });
+  }
+  document.addEventListener('keydown', function(e) {
+    if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'a') {
+      e.preventDefault();
+      addRow();
+    }
+  });
+  document.getElementById('fileInput').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(event) {
+      try {
+        const data = JSON.parse(event.target.result);
+        if (Array.isArray(data)) {
+          localStorage.setItem('gpaData', JSON.stringify(data));
+        } else if (data.gpaData) {
+          localStorage.setItem('gpaData', JSON.stringify(data.gpaData));
+          if (data.currentCGPA) localStorage.setItem('currentCGPA', data.currentCGPA);
+          if (data.totalCompletedCredits) localStorage.setItem('totalCompletedCredits', data.totalCompletedCredits);
+        }
+        loadData();
+      } catch (err) {
+        alert('Invalid file format.');
+      }
+    };
+    reader.readAsText(file);
+  });
+  document.addEventListener('DOMContentLoaded', () => {
+    loadData();
+    document.getElementById('currentCGPA').addEventListener('input', function() {
+      calculateSGPA();
+      saveData();
+    });
+    document.getElementById('totalCompletedCredits').addEventListener('input', function() {
+      calculateSGPA();
+      saveData();
+    });
+  });
+  function openSemesterModal() {
+    const modal = document.getElementById('semesterCGPAModal');
+    modal.style.display = 'flex';
+    modal.setAttribute('tabindex', '-1');
+    modal.focus();
+    if (document.querySelectorAll('#modalSemesterGPATable tbody tr').length === 0) {
+      addModalSemesterRow();
+    }
+  }
+  function closeSemesterModal() {
+    document.getElementById('semesterCGPAModal').style.display = 'none';
+  }
+  function addModalSemesterRow() {
+    const tbody = document.getElementById('modalSemesterGPATable').querySelector('tbody');
+    const rowCount = tbody.rows.length + 1;
+    const row = tbody.insertRow();
+    row.innerHTML = `
+      <td>Semester ${rowCount}</td>
+      <td><input type="number" min="0" max="4" step="0.01" class="sem-gpa" placeholder="GPA" aria-label="Semester GPA"></td>
+      <td><input type="number" min="0" step="0.5" class="sem-credits" placeholder="Credits" aria-label="Semester Credits"></td>
+      <td><button type="button" onclick="this.closest('tr').remove(); updateModalSemesterNumbers(); calculateModalSemesterCGPA();" class="delete-btn" title="Delete Semester" aria-label="Delete Semester">🗑️</button></td>
+    `;
+    row.querySelectorAll('input').forEach(input => {
+      input.addEventListener('input', calculateModalSemesterCGPA);
+    });
+    calculateModalSemesterCGPA();
+    updateModalSemesterNumbers();
+  }
+  function updateModalSemesterNumbers() {
+    const rows = document.querySelectorAll('#modalSemesterGPATable tbody tr');
+    rows.forEach((row, idx) => {
+      row.cells[0].textContent = `Semester ${idx + 1}`;
+    });
+  }
+  function calculateModalSemesterCGPA() {
+    const rows = document.querySelectorAll('#modalSemesterGPATable tbody tr');
+    let totalPoints = 0;
+    let totalCredits = 0;
+    let hasError = false;
+    let errorMsg = "";
+    rows.forEach(row => {
+      const gpaInput = row.querySelector('.sem-gpa');
+      const creditsInput = row.querySelector('.sem-credits');
+      const gpa = parseFloat(gpaInput.value);
+      const credits = parseFloat(creditsInput.value);
+      if (gpaInput.value && (gpa < 0 || gpa > 4)) {
+        gpaInput.style.borderColor = "#e74c3c";
+        hasError = true;
+        errorMsg = "GPA must be between 0 and 4.";
+      } else {
+        gpaInput.style.borderColor = "";
+      }
+      if (creditsInput.value && credits < 0) {
+        creditsInput.style.borderColor = "#e74c3c";
+        hasError = true;
+        errorMsg = "Credits must be positive.";
+      } else {
+        creditsInput.style.borderColor = "";
+      }
+      if (!isNaN(gpa) && !isNaN(credits)) {
+        totalPoints += gpa * credits;
+        totalCredits += credits;
+      }
+    });
+    const cgpaDisplay = document.getElementById('modalSemesterCGPADisplay');
+    const errorDisplay = document.getElementById('modalSemesterError');
+    if (hasError) {
+      errorDisplay.textContent = errorMsg;
+      errorDisplay.style.display = "block";
+      cgpaDisplay.textContent = "";
+    } else {
+      errorDisplay.style.display = "none";
+      cgpaDisplay.textContent = totalCredits > 0 ? `Calculated CGPA: ${(totalPoints / totalCredits).toFixed(2)}` : '';
+    }
+  }
+  function applyModalSemesterCGPA() {
+    const rows = document.querySelectorAll('#modalSemesterGPATable tbody tr');
+    let totalPoints = 0;
+    let totalCredits = 0;
+    let hasEmpty = false;
+    rows.forEach(row => {
+      const gpa = parseFloat(row.querySelector('.sem-gpa').value);
+      const credits = parseFloat(row.querySelector('.sem-credits').value);
+      if (isNaN(gpa) || isNaN(credits)) hasEmpty = true;
+      totalPoints += (isNaN(gpa) ? 0 : gpa) * (isNaN(credits) ? 0 : credits);
+      totalCredits += isNaN(credits) ? 0 : credits;
+    });
+    if (hasEmpty) {
+      document.getElementById('modalSemesterError').textContent = "Please fill all GPA and Credits fields.";
+      document.getElementById('modalSemesterError').style.display = "block";
+      return;
+    }
+    if (totalCredits > 0) {
+      const cgpa = (totalPoints / totalCredits).toFixed(2);
+      document.getElementById('currentCGPA').value = cgpa;
+      document.getElementById('totalCompletedCredits').value = totalCredits;
+      calculateSGPA();
+      saveData();
+      closeSemesterModal();
+    }
+  }
+  // Trap focus inside modal for accessibility
+  document.getElementById('semesterCGPAModal').addEventListener('keydown', function(e) {
+    if (e.key === "Escape") closeSemesterModal();
+    const focusable = this.querySelectorAll('button, [tabindex="0"], input');
+    if (!focusable.length) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (e.key === "Tab") {
+      if (e.shiftKey) {
+        if (document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else {
+        if (document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    }
+  });
+  </script>
+  <div id="toast" style="position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:#2ecc71;color:white;padding:12px 24px;border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,0.15);font-weight:600;z-index:2000;display:none;transition:all 0.3s;"></div>
+  
+  
